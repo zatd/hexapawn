@@ -23,7 +23,7 @@ def printgameboard():
         print (pieces[i:i+3], slots[i:i+3])
     
 def checkvalidity(move):
-    global pieces,slots
+    global pieces, slots, player
     validity = True
     try:
         if len(move) != 2: validity = False
@@ -33,7 +33,7 @@ def checkvalidity(move):
         if pieces[int(move[0])-1] is 'x':
             
             
-        elif pieces[int(move[o])-1] is 'o':
+        elif pieces[int(move[0])-1] is 'o':
             
         #walk on empty slot
         if pieces[int(move[1])-1] is ' ':
@@ -49,7 +49,9 @@ def checkvalidity(move):
                 if int(move[0]) < int(move[1]): validity = False
             elif pieces[int(move[0])-1] is 'o':
                 if int(move[0]) > int(move[1]): validity = False
-                    
+        
+        if player == 1: player = 2
+        else: player = 1
         return validity
     except:
         print ("Error has occured!")
@@ -65,9 +67,10 @@ def movepiece(move):
     printgameboard()
     
 def main():
-    global pieces, slots
+    global pieces, slots, player
     pieces = ['x','x','x',' ',' ',' ','o','o','o']
     slots = ['1','2','3','4','5','6','7','8','9']
+    player = 1
     printgameboard()
     
     while True:

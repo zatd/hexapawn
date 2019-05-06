@@ -17,13 +17,24 @@ win condition:
 
 """
 
+import tkinter
+import sys
+    
+def changeplayer():
+    global player
+    
+    if player == 1: player = 2
+    else: player = 1
+    
 def printgameboard():
     global pieces, slots
+    
     for i in range(0,7,3):
         print (pieces[i:i+3], slots[i:i+3])
-    
+
 def checkvalidity(move):
     global pieces, slots, player
+    
     validity = True
     try:
         if len(move) != 2: validity = False
@@ -31,54 +42,115 @@ def checkvalidity(move):
         if move[0] and move[1] not in slots: validity = False
         #can only move 'x' or 'o'
         if pieces[int(move[0])-1] is 'x':
-            
+            #move own piece only
+            if player != 1: validity = False
+            #walk into teammate invalid
+            if pieces[int(move[1])-1] is 'x': validity = False
+            #take opponent
+            if pieces[int(move[1])-1] is 'o':
+                #using modulo operation to validate diagonal direction
+                if int(move[0])%3 == 0:
+                    if int(move[0])+2 != int(move[1]): validity = False
+                if int(move[0])%3 == 1:
+                    if int(move[0])+4 != int(move[1]): validity = False
+                if int(move[0])%3 == 2:
+                    if int(move[0])+2 != int(move[1]) and int(move[0])+4 != int(move[1]): validity = False
+            #walk onto empty slot
+            if pieces[int(move[1])-1] is ' ':
+                if int(move[0])+3 != int(move[1]): validity = False
             
         elif pieces[int(move[0])-1] is 'o':
-            
-        #walk on empty slot
-        if pieces[int(move[1])-1] is ' ':
-            #can only walk forwards
-            if pieces[int(move[0])-1] is 'x':
-                if int(move[0])+3 != int(move[1]): validity = False
-            elif pieces[int(move[0])-1] is 'o':
+            #move own piece only
+            if player != 2: validity = False
+            #walk into teammate invalid
+            if pieces[int(move[1])-1] is 'o': validity = False
+            #take opponent
+            if pieces[int(move[1])-1] is 'x':
+                if int(move[0])%3 == 0:
+                    if int(move[0])-4 != int(move[1]): validity = False
+                if int(move[0])%3 == 1:
+                    if int(move[0])-2 != int(move[1]): validity = False
+                if int(move[0])%3 == 2:
+                    if int(move[0])-4 != int(move[1]) and int(move[0])-2 != int(move[1]): validity = False
+            #walk onto empty slot
+            if pieces[int(move[1])-1] is ' ':
                 if int(move[0])-3 != int(move[1]): validity = False
-        #take opponent
-        elif pieces[int(move[0])-1] != pieces[int(move[1])-1]:
-            #can only walk diagonals
-            if pieces[int(move[0])-1] is 'x':
-                if int(move[0]) < int(move[1]): validity = False
-            elif pieces[int(move[0])-1] is 'o':
-                if int(move[0]) > int(move[1]): validity = False
+       
+        elif pieces[int(move[0])-1] is ' ': validity = False
         
-        if player == 1: player = 2
-        else: player = 1
         return validity
+    
     except:
         print ("Error has occured!")
         
-    
 def movepiece(move):
-    global pieces
+    global pieces, player
     
     move = int(move) - 11
+    #destination piece replaced by origin piece
     pieces[move%10] = pieces[move // 10**1 % 10]
+    #origin piece replaced by blank
     pieces[move // 10**1 % 10] = ' '
     
     printgameboard()
     
+def checkpossiblemoves():
+    global pieces, player
+    
+    if player != 1: 
+        for poscheck in [i+1 for i, x in enumerate(pieces) if x == "x"]:
+            if pieces[poscheck+3-1] is " ": return True
+            if poscheck%3 == 0 and pieces[poscheck+2-1] == "o": return True
+            if poscheck%3 == 1 and pieces[poscheck+2-1] == "o" and pieces[poscheck+4-1] == "o": return True
+            if poscheck%3 == 2 and pieces[poscheck+4-1] == "o": return True
+    if player != 2: 
+        for poscheck in [i+1 for i, x in enumerate(pieces) if x == "o"]:
+            if pieces[poscheck-3-1] is " ": return True
+            if poscheck%3 == 0 and pieces[poscheck-4-1] == "x": return True
+            if poscheck%3 == 1 and (pieces[poscheck-4-1] == "x" or pieces[poscheck-2-1] == "x"): return True
+            if poscheck%3 == 2 and pieces[poscheck-2-1] == "x": return True
+    return False
+
+def checkwin():
+    global pieces, player, winner
+    
+    winner = player
+    #check if opponent is trapped
+    if checkpossiblemoves() == False: return True
+    
+    #check if player reached the end
+    if player == 1:    
+        for poscheck in [i+1 for i, x in enumerate(pieces) if x == "x"]:
+            if poscheck in [7,8,9]: return True
+    if player == 2:
+        for poscheck in [i+1 for i, x in enumerate(pieces) if x == "o"]:
+            if poscheck in [1,2,3]: return True
+    
+    winner = 0
+    
 def main():
-    global pieces, slots, player
+    global pieces, slots, player, winner, expression
     pieces = ['x','x','x',' ',' ',' ','o','o','o']
     slots = ['1','2','3','4','5','6','7','8','9']
     player = 1
+    winner = 0
+    expression = ""
     printgameboard()
     
     while True:
-        move = input("Your move: ")
-        if checkvalidity(move) == True: movepiece(move)
+        move = input("Player "+ str(player) + "! Your move: ")
+        #quit game with 'q'
+        if move is 'q': 
+            print ("Quit game!")
+            break
+        #game continues
+        if checkvalidity(move) == True: 
+            movepiece(move)
+            if checkwin() == True: break
+            changeplayer()
         else: print ("Invalid move!")
-        
-        if move == 'q': break
+    
+    print ("Player", winner, "wins")
     
 if __name__ == '__main__':
     main()

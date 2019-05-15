@@ -1,9 +1,9 @@
 # hexapawn
 
 ## rules: 
-## 1. pawns can only move forwards to an available slot
-## 1. can move diagonally to take an opponent
-## 1. Item 3
+ 1. pawns can only move forwards to an available slot
+ 1. can move diagonally to take an opponent
+ 1. Item 3
 
 ### win condition:
 ### 1. get a pawn to the end
